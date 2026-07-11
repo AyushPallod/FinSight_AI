@@ -1,7 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.routers import documents, search, chat
+from app.routers import documents, search, chat, auth
+from app.core.database import engine, Base
+from app.models.user import User
+
+# Automatically create database tables (SQLite finsight.db) on startup
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -21,6 +26,7 @@ app.add_middleware(
 app.include_router(documents.router, prefix=settings.API_V1_STR)
 app.include_router(search.router, prefix=settings.API_V1_STR)
 app.include_router(chat.router, prefix=settings.API_V1_STR)
+app.include_router(auth.router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 def read_root():

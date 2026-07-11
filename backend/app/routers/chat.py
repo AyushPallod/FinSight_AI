@@ -1,10 +1,12 @@
 import logging
 import os
 from typing import List
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic import BaseModel
 from app.services.retrieval import retrieval_service
 from app.services.llm import llm_service
+from app.core.auth import get_current_user
+from app.models.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +31,10 @@ class ChatResponse(BaseModel):
     citations: List[CitationItem]
 
 @router.post("", response_model=ChatResponse, status_code=status.HTTP_200_OK)
-async def chat_interaction(request: ChatRequest):
+async def chat_interaction(
+    request: ChatRequest,
+    current_user: User = Depends(get_current_user)
+):
     """
     RAG chat endpoint.
     Retrieves relevant document chunks, prompt-grounds the local Llama 3.2 model,

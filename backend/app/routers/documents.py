@@ -3,11 +3,13 @@ import shutil
 import logging
 import uuid
 from typing import List
-from fastapi import APIRouter, UploadFile, File, HTTPException, status
+from fastapi import APIRouter, UploadFile, File, HTTPException, status, Depends
 from pydantic import BaseModel
 from app.services.ingestion import ingestion_service
 from app.services.chunking import chunking_service
 from app.services.vector_store import vector_store_service
+from app.core.auth import get_current_user
+from app.models.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +44,10 @@ class DocumentIngestionResponse(BaseModel):
     chunks: List[ChunkContent]
 
 @router.post("/upload", response_model=DocumentIngestionResponse, status_code=status.HTTP_201_CREATED)
-async def upload_document(file: UploadFile = File(...)):
+async def upload_document(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user)
+):
     """
     Upload a document (PDF, DOCX, PPTX, or TXT) to extract its text and perform semantic chunking with metadata.
     """

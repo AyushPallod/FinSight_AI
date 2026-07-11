@@ -1,8 +1,10 @@
 import logging
 from typing import List
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic import BaseModel
 from app.services.retrieval import retrieval_service
+from app.core.auth import get_current_user
+from app.models.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +35,10 @@ class SearchResponse(BaseModel):
     results: List[SearchResultItem]
 
 @router.post("", response_model=SearchResponse, status_code=status.HTTP_200_OK)
-async def search_documents(request: SearchRequest):
+async def search_documents(
+    request: SearchRequest,
+    current_user: User = Depends(get_current_user)
+):
     """
     Perform a hybrid search (BM25 + Dense Vector) using Reciprocal Rank Fusion (RRF).
     Returns the top-k document chunks matching the query context.
