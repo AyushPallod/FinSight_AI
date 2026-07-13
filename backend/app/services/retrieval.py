@@ -23,11 +23,12 @@ class RetrievalService:
             # Generate embedding vector for the search query
             query_vector = vector_store_service.model.encode(query).tolist()
             
-            response = vector_store_service.client.query_points(
-                collection_name=vector_store_service.collection_name,
-                query=query_vector,
-                limit=limit
-            )
+            with vector_store_service.get_client() as client:
+                response = client.query_points(
+                    collection_name=vector_store_service.collection_name,
+                    query=query_vector,
+                    limit=limit
+                )
             return response.points
         except Exception as e:
             logger.error(f"Error during dense search: {str(e)}", exc_info=True)
@@ -39,12 +40,13 @@ class RetrievalService:
         """
         try:
             # 1. Retrieve all points from Qdrant to build the corpus
-            scroll_result, _ = vector_store_service.client.scroll(
-                collection_name=vector_store_service.collection_name,
-                limit=10000,
-                with_payload=True,
-                with_vectors=False  # We do not need vectors for BM25
-            )
+            with vector_store_service.get_client() as client:
+                scroll_result, _ = client.scroll(
+                    collection_name=vector_store_service.collection_name,
+                    limit=10000,
+                    with_payload=True,
+                    with_vectors=False  # We do not need vectors for BM25
+                )
             
             if not scroll_result:
                 return []

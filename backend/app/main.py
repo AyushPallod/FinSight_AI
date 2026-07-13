@@ -4,6 +4,8 @@ from app.core.config import settings
 from app.routers import documents, search, chat, auth
 from app.core.database import engine, Base
 from app.models.user import User
+from app.models.document import Document
+from app.models.chat import ChatMessage
 
 # Automatically create database tables (SQLite finsight.db) on startup
 Base.metadata.create_all(bind=engine)

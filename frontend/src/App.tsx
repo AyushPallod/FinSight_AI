@@ -26,7 +26,7 @@ function App() {
   const checkConnection = () => {
     setLoading(true)
     setError(null)
-    fetch('http://localhost:8000/api/v1/health')
+    fetch('/api/v1/health')
       .then(res => {
         if (!res.ok) throw new Error('Backend healthcheck failed')
         return res.json()
@@ -37,7 +37,7 @@ function App() {
       })
       .catch(err => {
         console.error(err)
-        setError('Could not connect to FastAPI backend at http://localhost:8000')
+        setError('Could not connect to FastAPI backend at /api/v1/health')
         setHealth(null)
         setLoading(false)
       })
@@ -110,7 +110,7 @@ function App() {
                   )}
                 </div>
                 <div className="mt-4">
-                  <p className="text-xs font-mono text-slate-500">http://localhost:8000</p>
+                  <p className="text-xs font-mono text-slate-500">/api/v1</p>
                   <p className="text-sm font-semibold mt-1">{health ? 'Connected' : 'Offline'}</p>
                 </div>
               </div>

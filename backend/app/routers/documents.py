@@ -2,14 +2,15 @@ import os
 import shutil
 import logging
 import uuid
-from typing import List
 from fastapi import APIRouter, UploadFile, File, HTTPException, status, Depends
 from pydantic import BaseModel
-from app.services.ingestion import ingestion_service
-from app.services.chunking import chunking_service
-from app.services.vector_store import vector_store_service
+from sqlalchemy.orm import Session
+from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.models.user import User
+from app.models.document import Document
+from app.tasks.ingestion import process_document_task
+
 
 logger = logging.getLogger(__name__)
 
@@ -20,36 +21,30 @@ router = APIRouter(
 
 # Temp uploads directory path
 TEMP_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "temp_uploads")
+os.makedirs(TEMP_DIR, exist_ok=True)
 
 # Response schemas
-class PageContent(BaseModel):
-    page_number: int
-    text: str
-
-class ChunkContent(BaseModel):
-    chunk_index: int
-    document_id: str
-    source_filename: str
-    page_number: int
-    text: str
-    word_count: int
-    char_count: int
-
-class DocumentIngestionResponse(BaseModel):
+class UploadResponse(BaseModel):
+    id: int
     filename: str
-    extension: str
-    total_pages: int
-    total_characters: int
-    content: List[PageContent]
-    chunks: List[ChunkContent]
+    upload_status: str
+    message: str
 
-@router.post("/upload", response_model=DocumentIngestionResponse, status_code=status.HTTP_201_CREATED)
+class DocumentStatusResponse(BaseModel):
+    id: int
+    filename: str
+    upload_status: str
+    created_at: str
+
+@router.post("/upload", response_model=UploadResponse, status_code=status.HTTP_202_ACCEPTED)
 async def upload_document(
     file: UploadFile = File(...),
+    db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """
-    Upload a document (PDF, DOCX, PPTX, or TXT) to extract its text and perform semantic chunking with metadata.
+    Upload a document (PDF, DOCX, PPTX, or TXT). 
+    Saves metadata to database and offloads parsing, chunking, and indexing to a background Celery queue.
     """
     filename = file.filename
     if not filename:
@@ -67,8 +62,10 @@ async def upload_document(
             detail=f"Unsupported file type: .{file_extension}. Allowed types: {', '.join(allowed_extensions)}"
         )
 
-    # Save to temp file
-    temp_file_path = os.path.join(TEMP_DIR, filename)
+    # Save to unique temp file to avoid file overwriting conflicts
+    unique_id = str(uuid.uuid4())
+    temp_filename = f"{unique_id}_{filename}"
+    temp_file_path = os.path.join(TEMP_DIR, temp_filename)
     logger.info(f"Receiving file: {filename}. Saving temporarily to: {temp_file_path}")
 
     try:
@@ -77,61 +74,71 @@ async def upload_document(
             while chunk := await file.read(1024 * 1024):  # 1MB chunk size
                 buffer.write(chunk)
 
-        # Parse file text
-        extracted_pages = ingestion_service.extract_text(temp_file_path, file_extension)
+        # 1. Create a metadata entry in the SQLite database
+        new_doc = Document(
+            filename=filename,
+            upload_status="pending",
+            owner_id=current_user.id
+        )
+        db.add(new_doc)
+        db.commit()
+        db.refresh(new_doc)
 
-        # Generate a unique document ID
-        document_id = str(uuid.uuid4())
-
-        # Generate semantic chunks with detailed metadata
-        chunks_data = chunking_service.chunk_document(
-            pages=extracted_pages,
-            document_id=document_id,
-            source_filename=filename
+        # 2. Trigger Celery Task Asynchronously
+        logger.info(f"Queuing background ingestion task for document '{filename}' (ID: {new_doc.id})")
+        process_document_task.delay(
+            document_id=new_doc.id,
+            file_path=temp_file_path,
+            filename=filename
         )
 
-        # Index chunks in Qdrant Vector Store (BGE-M3 Embeddings)
-        logger.info(f"Indexing chunks in Qdrant collection for document: {filename}")
-        vector_store_service.upsert_document_chunks(chunks_data)
-
-        total_characters = sum(len(p["text"]) for p in extracted_pages)
-        logger.info(f"Successfully processed {filename}. Extracted {len(extracted_pages)} pages, {len(chunks_data)} chunks, {total_characters} characters.")
-
-        return DocumentIngestionResponse(
-            filename=filename,
-            extension=file_extension,
-            total_pages=len(extracted_pages),
-            total_characters=total_characters,
-            content=[
-                PageContent(page_number=p["page_number"], text=p["text"]) 
-                for p in extracted_pages
-            ],
-            chunks=[
-                ChunkContent(
-                    chunk_index=c["chunk_index"],
-                    document_id=c["document_id"],
-                    source_filename=c["source_filename"],
-                    page_number=c["page_number"],
-                    text=c["text"],
-                    word_count=c["word_count"],
-                    char_count=c["char_count"]
-                )
-                for c in chunks_data
-            ]
+        return UploadResponse(
+            id=new_doc.id,
+            filename=new_doc.filename,
+            upload_status=new_doc.upload_status,
+            message="Document upload accepted. Processing started in the background."
         )
 
     except Exception as e:
-        logger.error(f"Error during ingestion of {filename}: {str(e)}", exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to process document: {str(e)}"
-        )
-
-    finally:
-        # Clean up the temporary file
+        logger.error(f"Error starting background ingestion of {filename}: {str(e)}", exc_info=True)
+        # Clean up temp file immediately on failure to trigger task
         if os.path.exists(temp_file_path):
             try:
                 os.remove(temp_file_path)
-                logger.info(f"Cleaned up temp file: {temp_file_path}")
-            except Exception as cleanup_error:
-                logger.warning(f"Failed to delete temp file {temp_file_path}: {str(cleanup_error)}")
+            except Exception:
+                pass
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to initiate document upload: {str(e)}"
+        )
+
+
+@router.get("/{id}/status", response_model=DocumentStatusResponse, status_code=status.HTTP_200_OK)
+def get_document_status(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get the processing status of an uploaded document.
+    """
+    doc = db.query(Document).filter(Document.id == id).first()
+    if not doc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found."
+        )
+
+    # Ownership check
+    if doc.owner_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to view this document's status."
+        )
+
+    return DocumentStatusResponse(
+        id=doc.id,
+        filename=doc.filename,
+        upload_status=doc.upload_status,
+        created_at=doc.created_at.isoformat()
+    )

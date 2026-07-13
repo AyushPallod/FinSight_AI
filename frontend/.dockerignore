@@ -1,0 +1,13 @@
+# Ignore local node packages
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignore local builds
+dist/
+build/
+
+# Ignore OS files
+.DS_Store
+Thumbs.db

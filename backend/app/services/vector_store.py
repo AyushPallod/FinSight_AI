@@ -8,6 +8,9 @@ from qdrant_client.models import Distance, VectorParams, PointStruct
 
 logger = logging.getLogger(__name__)
 
+from contextlib import contextmanager
+from app.core.config import settings
+
 class VectorStoreService:
     def __init__(self):
         self.collection_name = "financial_documents"
@@ -19,11 +22,29 @@ class VectorStoreService:
             os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 
             "qdrant_storage"
         )
-        logger.info(f"Initializing Qdrant client with local storage at: {self.db_path}")
-        self.client = QdrantClient(path=self.db_path)
         
         # Initialize default collection
         self.init_collection()
+
+    @contextmanager
+    def get_client(self):
+        """
+        Context manager to lease a Qdrant client connection.
+        Attempts to connect to standard port 6333 first, falling back to local file-based database.
+        Strictly releases file locks upon context exit.
+        """
+        client = None
+        try:
+            client = QdrantClient(host=settings.QDRANT_HOST, port=settings.QDRANT_PORT, timeout=1.0)
+            client.get_collections()  # Simple call to verify server is active
+        except Exception:
+            client = QdrantClient(path=self.db_path)
+        
+        try:
+            yield client
+        finally:
+            if client:
+                client.close()
 
     @property
     def model(self) -> SentenceTransformer:
@@ -42,18 +63,19 @@ class VectorStoreService:
         Creates the Qdrant collection if it does not exist.
         """
         try:
-            if not self.client.collection_exists(self.collection_name):
-                logger.info(f"Collection '{self.collection_name}' not found. Creating it.")
-                self.client.create_collection(
-                    collection_name=self.collection_name,
-                    vectors_config=VectorParams(
-                        size=self.vector_dim,
-                        distance=Distance.COSINE
+            with self.get_client() as client:
+                if not client.collection_exists(self.collection_name):
+                    logger.info(f"Collection '{self.collection_name}' not found. Creating it.")
+                    client.create_collection(
+                        collection_name=self.collection_name,
+                        vectors_config=VectorParams(
+                            size=self.vector_dim,
+                            distance=Distance.COSINE
+                        )
                     )
-                )
-                logger.info(f"Collection '{self.collection_name}' created successfully.")
-            else:
-                logger.info(f"Collection '{self.collection_name}' already exists.")
+                    logger.info(f"Collection '{self.collection_name}' created successfully.")
+                else:
+                    logger.info(f"Collection '{self.collection_name}' already exists.")
         except Exception as e:
             logger.error(f"Failed to check or create collection '{self.collection_name}': {str(e)}", exc_info=True)
 
@@ -96,10 +118,11 @@ class VectorStoreService:
 
             # 4. Upsert into Qdrant database
             logger.info(f"Upserting {len(points)} points into collection '{self.collection_name}'...")
-            self.client.upsert(
-                collection_name=self.collection_name,
-                points=points
-            )
+            with self.get_client() as client:
+                client.upsert(
+                    collection_name=self.collection_name,
+                    points=points
+                )
             logger.info("Upsert completed successfully.")
             return True
 

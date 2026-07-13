@@ -1,10 +1,13 @@
 import logging
+import json
 from typing import List
+import redis
 from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic import BaseModel
 from app.services.retrieval import retrieval_service
 from app.core.auth import get_current_user
 from app.models.user import User
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +15,9 @@ router = APIRouter(
     prefix="/search",
     tags=["search"]
 )
+
+# Connect to Redis with string decoding enabled
+redis_client = redis.Redis.from_url(settings.REDIS_URL, decode_responses=True)
 
 # Request & Response schemas
 class SearchRequest(BaseModel):
@@ -41,7 +47,7 @@ async def search_documents(
 ):
     """
     Perform a hybrid search (BM25 + Dense Vector) using Reciprocal Rank Fusion (RRF).
-    Returns the top-k document chunks matching the query context.
+    Caches results in Redis for identical queries for 5 minutes, scoped by user.
     """
     query = request.query.strip()
     if not query:
@@ -50,14 +56,26 @@ async def search_documents(
             detail="Search query cannot be empty."
         )
 
+    # Scoped cache key to ensure user A's query doesn't leak to user B
+    cache_key = f"search_cache:{current_user.id}:{query}:{request.limit}"
+    
+    # Try fetching from cache
     try:
-        logger.info(f"Received search request for query: '{query}'")
+        cached_data = redis_client.get(cache_key)
+        if cached_data:
+            logger.info(f"Cache HIT for query: '{query}' (User ID: {current_user.id})")
+            return json.loads(cached_data)
+    except Exception as re:
+        logger.warning(f"Failed to read from Redis search cache: {str(re)}. Falling back to direct search.")
+
+    try:
+        logger.info(f"Cache MISS. Executing hybrid search for query: '{query}'")
         fused_results = retrieval_service.hybrid_search(
             query=query,
             limit=request.limit
         )
 
-        return SearchResponse(
+        response_data = SearchResponse(
             query=query,
             total_results=len(fused_results),
             results=[
@@ -75,6 +93,15 @@ async def search_documents(
                 for item in fused_results
             ]
         )
+
+        # Cache results in Redis for 5 minutes (300 seconds)
+        try:
+            redis_client.setex(cache_key, 300, response_data.model_dump_json())
+            logger.info(f"Cached search results in Redis: '{cache_key}'")
+        except Exception as re:
+            logger.warning(f"Failed to write to Redis search cache: {str(re)}")
+
+        return response_data
 
     except Exception as e:
         logger.error(f"Failed to perform search: {str(e)}", exc_info=True)

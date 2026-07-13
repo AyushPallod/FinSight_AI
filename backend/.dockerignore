@@ -1,0 +1,22 @@
+# Ignore local virtual environments
+.venv/
+venv/
+env/
+
+# Ignore Python cache and bytecode
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# Ignore local database and upload storages
+qdrant_storage/
+temp_uploads/
+*.db
+
+# Ignore logs
+*.log
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
