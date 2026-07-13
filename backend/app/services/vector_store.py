@@ -1,28 +1,28 @@
 import os
 import uuid
 import logging
+from contextlib import contextmanager
 from typing import List, Dict, Any
 from sentence_transformers import SentenceTransformer
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-from contextlib import contextmanager
-from app.core.config import settings
 
 class VectorStoreService:
     def __init__(self):
         self.collection_name = "financial_documents"
         self.vector_dim = 1024  # BGE-M3 outputs 1024-dimensional vectors
         self._model = None
-        
+
         # Configure Qdrant database folder path in the workspace
         self.db_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 
-            "qdrant_storage"
+            os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+            "qdrant_storage",
         )
-        
+
         # Initialize default collection
         self.init_collection()
 
@@ -35,11 +35,13 @@ class VectorStoreService:
         """
         client = None
         try:
-            client = QdrantClient(host=settings.QDRANT_HOST, port=settings.QDRANT_PORT, timeout=1.0)
+            client = QdrantClient(
+                host=settings.QDRANT_HOST, port=settings.QDRANT_PORT, timeout=1.0
+            )
             client.get_collections()  # Simple call to verify server is active
         except Exception:
             client = QdrantClient(path=self.db_path)
-        
+
         try:
             yield client
         finally:
@@ -49,11 +51,13 @@ class VectorStoreService:
     @property
     def model(self) -> SentenceTransformer:
         """
-        Lazy-loads the embedding model. This prevents the server from freezing 
+        Lazy-loads the embedding model. This prevents the server from freezing
         during imports or startup while downloading/loading the model weights.
         """
         if self._model is None:
-            logger.info("Loading BAAI/bge-m3 embedding model (downloading ~2.2GB on first run)...")
+            logger.info(
+                "Loading BAAI/bge-m3 embedding model (downloading ~2.2GB on first run)..."
+            )
             self._model = SentenceTransformer("BAAI/bge-m3")
             logger.info("BAAI/bge-m3 model loaded successfully.")
         return self._model
@@ -65,19 +69,25 @@ class VectorStoreService:
         try:
             with self.get_client() as client:
                 if not client.collection_exists(self.collection_name):
-                    logger.info(f"Collection '{self.collection_name}' not found. Creating it.")
+                    logger.info(
+                        f"Collection '{self.collection_name}' not found. Creating it."
+                    )
                     client.create_collection(
                         collection_name=self.collection_name,
                         vectors_config=VectorParams(
-                            size=self.vector_dim,
-                            distance=Distance.COSINE
-                        )
+                            size=self.vector_dim, distance=Distance.COSINE
+                        ),
                     )
-                    logger.info(f"Collection '{self.collection_name}' created successfully.")
+                    logger.info(
+                        f"Collection '{self.collection_name}' created successfully."
+                    )
                 else:
                     logger.info(f"Collection '{self.collection_name}' already exists.")
         except Exception as e:
-            logger.error(f"Failed to check or create collection '{self.collection_name}': {str(e)}", exc_info=True)
+            logger.error(
+                f"Failed to check or create collection '{self.collection_name}': {str(e)}",
+                exc_info=True,
+            )
 
     def upsert_document_chunks(self, chunks: List[Dict[str, Any]]) -> bool:
         """
@@ -90,8 +100,10 @@ class VectorStoreService:
         try:
             # 1. Extract texts to embed
             texts = [chunk["text"] for chunk in chunks]
-            logger.info(f"Generating embeddings for {len(texts)} chunks using BGE-M3...")
-            
+            logger.info(
+                f"Generating embeddings for {len(texts)} chunks using BGE-M3..."
+            )
+
             # 2. Generate embeddings (dense vectors)
             embeddings = self.model.encode(texts, show_progress_bar=True)
             logger.info("Embeddings generated successfully.")
@@ -111,24 +123,26 @@ class VectorStoreService:
                             "chunk_index": chunk["chunk_index"],
                             "text": chunk["text"],
                             "word_count": chunk["word_count"],
-                            "char_count": chunk["char_count"]
-                        }
+                            "char_count": chunk["char_count"],
+                        },
                     )
                 )
 
             # 4. Upsert into Qdrant database
-            logger.info(f"Upserting {len(points)} points into collection '{self.collection_name}'...")
+            logger.info(
+                f"Upserting {len(points)} points into collection '{self.collection_name}'..."
+            )
             with self.get_client() as client:
-                client.upsert(
-                    collection_name=self.collection_name,
-                    points=points
-                )
+                client.upsert(collection_name=self.collection_name, points=points)
             logger.info("Upsert completed successfully.")
             return True
 
         except Exception as e:
-            logger.error(f"Error during chunk embedding and indexing: {str(e)}", exc_info=True)
+            logger.error(
+                f"Error during chunk embedding and indexing: {str(e)}", exc_info=True
+            )
             raise e
+
 
 # Instantiate singleton service instance
 vector_store_service = VectorStoreService()

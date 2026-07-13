@@ -3,16 +3,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.routers import documents, search, chat, auth
 from app.core.database import engine, Base
-from app.models.user import User
-from app.models.document import Document
-from app.models.chat import ChatMessage
+from app.models.user import User  # noqa: F401
+from app.models.document import Document  # noqa: F401
+from app.models.chat import ChatMessage  # noqa: F401
 
 # Automatically create database tables (SQLite finsight.db) on startup
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title=settings.PROJECT_NAME,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json"
+    title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
 # CORS middleware configuration
@@ -30,9 +29,11 @@ app.include_router(search.router, prefix=settings.API_V1_STR)
 app.include_router(chat.router, prefix=settings.API_V1_STR)
 app.include_router(auth.router, prefix=settings.API_V1_STR)
 
+
 @app.get("/")
 def read_root():
     return {"message": f"Welcome to {settings.PROJECT_NAME} API"}
+
 
 @app.get(f"{settings.API_V1_STR}/health")
 def health_check():
@@ -40,5 +41,5 @@ def health_check():
         "status": "healthy",
         "project": settings.PROJECT_NAME,
         "ollama_base_url": settings.OLLAMA_BASE_URL,
-        "qdrant_host": settings.QDRANT_HOST
+        "qdrant_host": settings.QDRANT_HOST,
     }

@@ -15,7 +15,9 @@ TESSERACT_DEFAULT_PATH = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 if shutil.which("tesseract") is None:
     if os.path.exists(TESSERACT_DEFAULT_PATH):
         pytesseract.pytesseract.tesseract_cmd = TESSERACT_DEFAULT_PATH
-        logger.info(f"Tesseract binary not found in system PATH. Pointed pytesseract to: {TESSERACT_DEFAULT_PATH}")
+        logger.info(
+            f"Tesseract binary not found in system PATH. Pointed pytesseract to: {TESSERACT_DEFAULT_PATH}"
+        )
     else:
         logger.warning(
             "Tesseract binary not found in system PATH and not found at default location. "
@@ -31,7 +33,7 @@ class IngestionService:
         [{"page_number": 1, "text": "..."}]
         """
         ext = file_extension.lower().strip(".")
-        
+
         if ext == "pdf":
             return self._extract_pdf(file_path)
         elif ext in ["doc", "docx"]:
@@ -57,14 +59,16 @@ class IngestionService:
 
             # If the page has very little or no text, it's likely scanned. Attempt OCR fallback.
             if len(text) < 50:
-                logger.info(f"Page {page_num} text density low ({len(text)} chars). Attempting Tesseract OCR fallback.")
+                logger.info(
+                    f"Page {page_num} text density low ({len(text)} chars). Attempting Tesseract OCR fallback."
+                )
                 try:
                     # Render page to a high quality image (DPI=150 is a good speed/accuracy balance)
                     pix = page.get_pixmap(dpi=150)
-                    
+
                     # Convert PyMuPDF pixmap to PIL Image
                     img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-                    
+
                     # Run Tesseract OCR on the image
                     ocr_text = pytesseract.image_to_string(img).strip()
                     if ocr_text:
@@ -73,18 +77,20 @@ class IngestionService:
                     else:
                         text = "[Scanned Page - No text found via OCR]"
                         logger.warning(f"Page {page_num} OCR returned empty string.")
-                        
+
                 except pytesseract.TesseractNotFoundError:
                     text = "[Scanned Page - Tesseract OCR not installed on server]"
-                    logger.error(f"Tesseract OCR is not installed or not in PATH. Skipping OCR for page {page_num}.")
+                    logger.error(
+                        f"Tesseract OCR is not installed or not in PATH. Skipping OCR for page {page_num}."
+                    )
                 except Exception as e:
                     text = f"[Scanned Page - OCR Error: {str(e)}]"
-                    logger.error(f"Error during OCR extraction on page {page_num}: {str(e)}", exc_info=True)
+                    logger.error(
+                        f"Error during OCR extraction on page {page_num}: {str(e)}",
+                        exc_info=True,
+                    )
 
-            pages_data.append({
-                "page_number": page_num,
-                "text": text
-            })
+            pages_data.append({"page_number": page_num, "text": text})
 
         doc.close()
         return pages_data
@@ -96,23 +102,22 @@ class IngestionService:
         """
         doc = docx.Document(file_path)
         full_text = []
-        
+
         # Extract text from paragraphs
         for para in doc.paragraphs:
             if para.text.strip():
                 full_text.append(para.text)
-                
+
         # Extract text from tables if any
         for table in doc.tables:
             for row in table.rows:
-                row_text = [cell.text.strip() for cell in row.cells if cell.text.strip()]
+                row_text = [
+                    cell.text.strip() for cell in row.cells if cell.text.strip()
+                ]
                 if row_text:
                     full_text.append(" | ".join(row_text))
 
-        return [{
-            "page_number": 1,
-            "text": "\n".join(full_text)
-        }]
+        return [{"page_number": 1, "text": "\n".join(full_text)}]
 
     def _extract_pptx(self, file_path: str) -> List[Dict[str, Any]]:
         """
@@ -132,10 +137,9 @@ class IngestionService:
                         if paragraph.text.strip():
                             slide_text.append(paragraph.text)
 
-            pages_data.append({
-                "page_number": page_num,
-                "text": "\n".join(slide_text).strip()
-            })
+            pages_data.append(
+                {"page_number": page_num, "text": "\n".join(slide_text).strip()}
+            )
 
         return pages_data
 
@@ -145,11 +149,9 @@ class IngestionService:
         """
         with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
             text = f.read()
-            
-        return [{
-            "page_number": 1,
-            "text": text.strip()
-        }]
+
+        return [{"page_number": 1, "text": text.strip()}]
+
 
 # Instantiate singleton service instance
 ingestion_service = IngestionService()

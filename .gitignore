@@ -70,3 +70,6 @@ eval_results/
 backend/eval_results/
 
 FinSight_AI_Build_Plan.md
+
+# SQLite databases
+*.db

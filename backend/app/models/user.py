@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship
 from app.core.database import Base
 from pydantic import BaseModel, field_validator
 
+
 # ==========================================
 # 1. SQLAlchemy Database Model
 # ==========================================
@@ -11,6 +12,7 @@ class User(Base):
     """
     SQLAlchemy model representing the 'users' table in the database.
     """
+
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -19,8 +21,12 @@ class User(Base):
     is_active = Column(Boolean, default=True)
 
     # Relationships
-    documents = relationship("Document", back_populates="owner", cascade="all, delete-orphan")
-    chat_messages = relationship("ChatMessage", back_populates="user", cascade="all, delete-orphan")
+    documents = relationship(
+        "Document", back_populates="owner", cascade="all, delete-orphan"
+    )
+    chat_messages = relationship(
+        "ChatMessage", back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 # ==========================================
@@ -41,6 +47,7 @@ class UserBase(BaseModel):
             raise ValueError("Invalid email format")
         return email_clean
 
+
 class UserCreate(UserBase):
     password: str
 
@@ -53,6 +60,7 @@ class UserCreate(UserBase):
         if len(v) < 6:
             raise ValueError("Password must be at least 6 characters long")
         return v
+
 
 class UserResponse(UserBase):
     id: int

@@ -5,6 +5,7 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
+
 class LLMService:
     def __init__(self):
         self.base_url = settings.OLLAMA_BASE_URL
@@ -30,7 +31,7 @@ class LLMService:
             context_blocks.append(
                 f"--- DOCUMENT SOURCE: {filename} | PAGE: {page} ---\n{text}\n"
             )
-        
+
         context_text = "\n".join(context_blocks)
 
         # 2. Build system-level grounding guidelines
@@ -60,18 +61,22 @@ class LLMService:
             "stream": False,
             "options": {
                 "temperature": 0.0  # Zero temperature for deterministic factual responses
-            }
+            },
         }
 
         try:
-            logger.info(f"Sending prompt to local Ollama API ({url}) using model '{self.model}'...")
+            logger.info(
+                f"Sending prompt to local Ollama API ({url}) using model '{self.model}'..."
+            )
             async with httpx.AsyncClient() as client:
                 response = await client.post(url, json=payload, timeout=60.0)
-                
+
             if response.status_code != 200:
-                logger.error(f"Ollama API returned non-200 status: {response.status_code} - {response.text}")
+                logger.error(
+                    f"Ollama API returned non-200 status: {response.status_code} - {response.text}"
+                )
                 return "Error: Failed to connect to the local LLM generation service."
-                
+
             result = response.json()
             answer = result.get("response", "").strip()
             return answer
@@ -80,7 +85,10 @@ class LLMService:
             logger.error(f"HTTP connection error to Ollama at {url}: {str(e)}")
             return "Error: Could not reach the local Ollama service. Please make sure Ollama is running."
         except Exception as e:
-            logger.error(f"Unexpected error during answer generation: {str(e)}", exc_info=True)
+            logger.error(
+                f"Unexpected error during answer generation: {str(e)}", exc_info=True
+            )
             return "Error: An unexpected error occurred while generating the answer."
+
 
 llm_service = LLMService()

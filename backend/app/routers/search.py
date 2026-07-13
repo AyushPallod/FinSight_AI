@@ -11,18 +11,17 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(
-    prefix="/search",
-    tags=["search"]
-)
+router = APIRouter(prefix="/search", tags=["search"])
 
 # Connect to Redis with string decoding enabled
 redis_client = redis.Redis.from_url(settings.REDIS_URL, decode_responses=True)
+
 
 # Request & Response schemas
 class SearchRequest(BaseModel):
     query: str
     limit: int = 5
+
 
 class SearchResultItem(BaseModel):
     id: str
@@ -35,15 +34,16 @@ class SearchResultItem(BaseModel):
     char_count: int
     rrf_score: float
 
+
 class SearchResponse(BaseModel):
     query: str
     total_results: int
     results: List[SearchResultItem]
 
+
 @router.post("", response_model=SearchResponse, status_code=status.HTTP_200_OK)
 async def search_documents(
-    request: SearchRequest,
-    current_user: User = Depends(get_current_user)
+    request: SearchRequest, current_user: User = Depends(get_current_user)
 ):
     """
     Perform a hybrid search (BM25 + Dense Vector) using Reciprocal Rank Fusion (RRF).
@@ -53,12 +53,12 @@ async def search_documents(
     if not query:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Search query cannot be empty."
+            detail="Search query cannot be empty.",
         )
 
     # Scoped cache key to ensure user A's query doesn't leak to user B
     cache_key = f"search_cache:{current_user.id}:{query}:{request.limit}"
-    
+
     # Try fetching from cache
     try:
         cached_data = redis_client.get(cache_key)
@@ -66,13 +66,14 @@ async def search_documents(
             logger.info(f"Cache HIT for query: '{query}' (User ID: {current_user.id})")
             return json.loads(cached_data)
     except Exception as re:
-        logger.warning(f"Failed to read from Redis search cache: {str(re)}. Falling back to direct search.")
+        logger.warning(
+            f"Failed to read from Redis search cache: {str(re)}. Falling back to direct search."
+        )
 
     try:
         logger.info(f"Cache MISS. Executing hybrid search for query: '{query}'")
         fused_results = retrieval_service.hybrid_search(
-            query=query,
-            limit=request.limit
+            query=query, limit=request.limit
         )
 
         response_data = SearchResponse(
@@ -88,10 +89,10 @@ async def search_documents(
                     source_filename=item["source_filename"],
                     word_count=item["word_count"],
                     char_count=item["char_count"],
-                    rrf_score=item["rrf_score"]
+                    rrf_score=item["rrf_score"],
                 )
                 for item in fused_results
-            ]
+            ],
         )
 
         # Cache results in Redis for 5 minutes (300 seconds)
@@ -107,5 +108,5 @@ async def search_documents(
         logger.error(f"Failed to perform search: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An error occurred while executing the search query: {str(e)}"
+            detail=f"An error occurred while executing the search query: {str(e)}",
         )
