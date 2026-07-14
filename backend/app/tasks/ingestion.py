@@ -12,6 +12,7 @@ from app.models.chat import ChatMessage  # noqa: F401 — needed for SQLAlchemy 
 from app.services.ingestion import ingestion_service
 from app.services.chunking import chunking_service
 from app.services.vector_store import vector_store_service
+from app.services.guardrails import scrub_chunks
 
 logger = logging.getLogger(__name__)
 
@@ -56,13 +57,17 @@ def process_document_task(document_id: int, file_path: str, filename: str) -> No
             pages=pages, document_id=str(document_id), source_filename=filename
         )
 
-        # 5. Generate embeddings and index inside Qdrant
+        # 6. Scrub PII from chunk text before it enters the vector store
+        logger.info(f"Scrubbing PII from {len(chunks)} chunks for document '{filename}'...")
+        chunks = scrub_chunks(chunks)
+
+        # 7. Generate embeddings and index inside Qdrant
         logger.info(
             f"Vector-indexing {len(chunks)} chunks in Qdrant for document ID {document_id}..."
         )
         vector_store_service.upsert_document_chunks(chunks)
 
-        # 6. Mark status as 'completed'
+        # 8. Mark status as 'completed'
         doc.upload_status = "completed"
         db.commit()
         logger.info(

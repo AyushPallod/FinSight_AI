@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic import BaseModel
 from app.services.retrieval import retrieval_service
 from app.services.llm import llm_service
+from app.services.guardrails import detect_prompt_injection
 from app.core.auth import get_current_user
 from app.models.user import User
 
@@ -46,6 +47,9 @@ async def chat_interaction(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Chat query cannot be empty.",
         )
+
+    # Safety layer: reject prompt injection attempts before touching the LLM
+    detect_prompt_injection(query)
 
     try:
         logger.info(f"Received RAG chat request for query: '{query}'")
