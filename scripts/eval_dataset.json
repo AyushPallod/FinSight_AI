@@ -1,0 +1,77 @@
+[
+  {
+    "question": "What is a 10-K filing?",
+    "ground_truth_answer": "A 10-K is an annual report required by the SEC that gives a comprehensive summary of a company's financial performance, including financial statements, risk factors, and management discussion.",
+    "ground_truth_context": "A 10-K is an annual report required by the U.S. Securities and Exchange Commission (SEC). It provides a comprehensive overview of the company's business and financial condition, including audited financial statements. It must be filed within 60 to 90 days after the end of the company's fiscal year."
+  },
+  {
+    "question": "What does EPS stand for and how is it calculated?",
+    "ground_truth_answer": "EPS stands for Earnings Per Share. It is calculated by dividing the company's net income by the total number of outstanding shares.",
+    "ground_truth_context": "Earnings per share (EPS) is a measure of a company's profitability on a per-share basis. It is calculated as net income divided by the weighted average number of common shares outstanding during the period."
+  },
+  {
+    "question": "What is the difference between gross profit and net profit?",
+    "ground_truth_answer": "Gross profit is revenue minus cost of goods sold. Net profit is what remains after all expenses including operating costs, taxes, interest, and depreciation are subtracted from gross profit.",
+    "ground_truth_context": "Gross profit is the profit a company makes after deducting the costs associated with producing and selling its products. Net profit, also known as net income, is the amount of money a company retains after accounting for all expenses, including operating costs, taxes, interest, and depreciation."
+  },
+  {
+    "question": "What is EBITDA?",
+    "ground_truth_answer": "EBITDA stands for Earnings Before Interest, Taxes, Depreciation, and Amortization. It is used to evaluate a company's operating performance without the effect of financing and accounting decisions.",
+    "ground_truth_context": "EBITDA stands for Earnings Before Interest, Taxes, Depreciation, and Amortization. It is a widely used metric to assess a company's core operational profitability, stripping out the effects of capital structure, tax environments, and non-cash accounting charges."
+  },
+  {
+    "question": "What is a balance sheet?",
+    "ground_truth_answer": "A balance sheet is a financial statement that shows a company's assets, liabilities, and shareholders' equity at a specific point in time, reflecting the accounting equation: Assets = Liabilities + Equity.",
+    "ground_truth_context": "A balance sheet is a financial statement that reports a company's assets, liabilities, and shareholder equity at a specific point in time. It provides a snapshot of what a company owns and owes, as well as the amount invested by shareholders. The balance sheet adheres to the equation: Assets = Liabilities + Shareholders' Equity."
+  },
+  {
+    "question": "What is free cash flow?",
+    "ground_truth_answer": "Free cash flow is the cash a company generates after accounting for cash outflows to support operations and maintain capital assets. It is calculated as operating cash flow minus capital expenditures.",
+    "ground_truth_context": "Free cash flow (FCF) represents the cash a company generates after accounting for capital expenditures (CapEx) needed to maintain or expand its asset base. FCF = Operating Cash Flow - Capital Expenditures. It is a key indicator of financial health and the ability to repay debt, pay dividends, or reinvest."
+  },
+  {
+    "question": "What is the price-to-earnings (P/E) ratio?",
+    "ground_truth_answer": "The P/E ratio is a valuation metric calculated as the company's share price divided by its earnings per share. It indicates how much investors are willing to pay per dollar of earnings.",
+    "ground_truth_context": "The price-to-earnings (P/E) ratio measures a company's current share price relative to its earnings per share (EPS). A high P/E may indicate that a stock is overvalued or that investors expect high growth rates in the future. A low P/E may suggest the opposite. P/E = Stock Price / EPS."
+  },
+  {
+    "question": "What is working capital?",
+    "ground_truth_answer": "Working capital is the difference between a company's current assets and current liabilities. It measures a company's short-term liquidity and operational efficiency.",
+    "ground_truth_context": "Working capital is defined as current assets minus current liabilities. It represents the short-term financial health of a company — whether it has enough liquid assets to cover its short-term obligations. Positive working capital indicates the company can fund its operations and invest in future activities."
+  },
+  {
+    "question": "What are retained earnings?",
+    "ground_truth_answer": "Retained earnings are the portion of net income that a company keeps rather than distributing to shareholders as dividends. They are reinvested into the business for growth or to pay off debt.",
+    "ground_truth_context": "Retained earnings represent the cumulative net income that has been kept within the company rather than distributed to shareholders as dividends. Retained earnings are found on the balance sheet under shareholders' equity and can be used for reinvestment, debt repayment, or future dividend payments."
+  },
+  {
+    "question": "What is revenue recognition?",
+    "ground_truth_answer": "Revenue recognition is an accounting principle that determines when revenue is recognized as earned. Under ASC 606, revenue is recognized when control of a good or service is transferred to the customer.",
+    "ground_truth_context": "Revenue recognition is the accounting principle that specifies the conditions under which revenue is acknowledged. Under ASC 606 (and IFRS 15), revenue is recognized when a company satisfies a performance obligation by transferring a promised good or service to a customer. This can occur at a point in time or over time."
+  },
+  {
+    "question": "What is goodwill in accounting?",
+    "ground_truth_answer": "Goodwill is an intangible asset recorded when a company acquires another company for more than the fair market value of its net assets. It represents brand reputation, customer relationships, and other intangible factors.",
+    "ground_truth_context": "Goodwill is an intangible asset that arises when one company acquires another for a price greater than the fair value of its identifiable net assets. Goodwill reflects non-quantifiable assets such as brand recognition, customer loyalty, employee relations, and proprietary technology. It is tested annually for impairment."
+  },
+  {
+    "question": "What is the debt-to-equity ratio?",
+    "ground_truth_answer": "The debt-to-equity (D/E) ratio compares a company's total liabilities to its shareholders' equity. It indicates how much a company is financing its operations with debt versus equity.",
+    "ground_truth_context": "The debt-to-equity ratio (D/E) is a financial leverage metric that compares a company's total liabilities to its shareholders' equity. Formula: D/E = Total Liabilities / Shareholders' Equity. A higher ratio means more debt financing, which increases financial risk but can also amplify returns."
+  },
+  {
+    "question": "What is operating leverage?",
+    "ground_truth_answer": "Operating leverage measures the proportion of fixed costs in a company's cost structure. A company with high operating leverage sees larger changes in operating income for a given change in revenue.",
+    "ground_truth_context": "Operating leverage refers to the degree to which a company uses fixed costs in its operations. High operating leverage means a large proportion of costs are fixed, so revenue changes have a magnified impact on operating profit. The Degree of Operating Leverage (DOL) = Contribution Margin / Operating Income."
+  },
+  {
+    "question": "What is an income statement?",
+    "ground_truth_answer": "An income statement is a financial statement that shows a company's revenues, expenses, and profits or losses over a specific accounting period. It is also called a profit and loss statement.",
+    "ground_truth_context": "The income statement, also known as the profit and loss (P&L) statement, reports a company's financial performance over a specific accounting period. It shows revenues at the top, then subtracts cost of goods sold, operating expenses, interest, and taxes to arrive at net income at the bottom."
+  },
+  {
+    "question": "What is a 10-Q filing?",
+    "ground_truth_answer": "A 10-Q is a quarterly financial report required by the SEC for public companies. It provides an unaudited view of the company's financial position and results for the most recent three-month period.",
+    "ground_truth_context": "A 10-Q is a quarterly report mandated by the U.S. Securities and Exchange Commission (SEC) for all publicly traded companies. It provides an unaudited overview of financial performance for the quarter, including income statements, balance sheets, and cash flow statements, and must be filed within 40 to 45 days after the end of each fiscal quarter."
+  }
+]

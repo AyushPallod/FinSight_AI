@@ -73,3 +73,9 @@ FinSight_AI_Build_Plan.md
 
 # SQLite databases
 *.db
+
+# HuggingFace model cache (sentence-transformers downloads)
+.cache/
+
+# Scripts cache
+scripts/__pycache__/
