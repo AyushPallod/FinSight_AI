@@ -110,3 +110,17 @@ def test_custom_prometheus_metrics():
     assert "retrieval_latency_seconds_count" in response.text
     assert "cache_misses_total" in response.text
     assert "active_documents_total" in response.text
+
+
+def test_eval_metrics_endpoint():
+    # Make a request to the newly added /eval-metrics endpoint
+    response = client.get("/api/v1/eval-metrics")
+    assert response.status_code == 200
+
+    # Verify it exports standard Prometheus metrics for RAGAS evaluation
+    assert "ragas_faithfulness" in response.text
+    assert "ragas_answer_relevancy" in response.text
+    assert "ragas_context_precision" in response.text
+    assert "ragas_context_recall" in response.text
+    assert "content-type" in response.headers
+    assert "text/plain" in response.headers["content-type"]
