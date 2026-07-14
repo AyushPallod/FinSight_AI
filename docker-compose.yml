@@ -210,16 +210,19 @@ services:
     restart: always
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
     depends_on:
       - frontend
       - backend
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider http://127.0.0.1 || exit 1"]
+      test: ["CMD-SHELL", "wget --no-check-certificate --spider https://localhost || exit 1"]
       interval: 5s
       timeout: 5s
       retries: 5
+
 
 
 volumes:

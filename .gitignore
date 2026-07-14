@@ -79,3 +79,6 @@ FinSight_AI_Build_Plan.md
 
 # Scripts cache
 scripts/__pycache__/
+
+# Nginx SSL Certificates
+nginx/certs/
