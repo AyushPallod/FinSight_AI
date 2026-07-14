@@ -46,14 +46,18 @@ _INJECTION_PATTERNS: list[re.Pattern] = [
     ),
     re.compile(r"pretend\s+(?:you\s+are|to\s+be)\s+", re.IGNORECASE),
     re.compile(r"roleplay\s+as\s+", re.IGNORECASE),
-    re.compile(r"switch\s+(?:to\s+)?(?:developer|jailbreak|unrestricted)\s+mode", re.IGNORECASE),
+    re.compile(
+        r"switch\s+(?:to\s+)?(?:developer|jailbreak|unrestricted)\s+mode", re.IGNORECASE
+    ),
     # "DAN" and classic jailbreak keywords
     re.compile(r"\bdo\s+anything\s+now\b", re.IGNORECASE),
     re.compile(r"\bdan\s+mode\b", re.IGNORECASE),
     re.compile(r"\bjailbreak\b", re.IGNORECASE),
     # Instruction overwrite attempts
     re.compile(r"new\s+(system\s+)?instructions?:", re.IGNORECASE),
-    re.compile(r"override\s+(the\s+)?(system\s+)?(prompt|instructions?)", re.IGNORECASE),
+    re.compile(
+        r"override\s+(the\s+)?(system\s+)?(prompt|instructions?)", re.IGNORECASE
+    ),
     re.compile(r"your\s+(real|true|actual)\s+instructions?\s+are", re.IGNORECASE),
     # Prompt delimiter injection
     re.compile(r"<\s*/?\s*system\s*>", re.IGNORECASE),

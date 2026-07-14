@@ -58,7 +58,9 @@ def process_document_task(document_id: int, file_path: str, filename: str) -> No
         )
 
         # 6. Scrub PII from chunk text before it enters the vector store
-        logger.info(f"Scrubbing PII from {len(chunks)} chunks for document '{filename}'...")
+        logger.info(
+            f"Scrubbing PII from {len(chunks)} chunks for document '{filename}'..."
+        )
         chunks = scrub_chunks(chunks)
 
         # 7. Generate embeddings and index inside Qdrant
