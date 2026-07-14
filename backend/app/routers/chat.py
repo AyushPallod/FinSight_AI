@@ -1,3 +1,4 @@
+import time
 import logging
 import os
 from typing import List
@@ -8,6 +9,7 @@ from app.services.llm import llm_service
 from app.services.guardrails import detect_prompt_injection
 from app.core.auth import get_current_user
 from app.models.user import User
+from app.core.metrics import retrieval_latency_seconds, llm_generation_latency_seconds
 
 logger = logging.getLogger(__name__)
 
@@ -55,10 +57,14 @@ async def chat_interaction(
         logger.info(f"Received RAG chat request for query: '{query}'")
 
         # 1. Retrieve top-k context chunks via our Hybrid Search
+        start_retrieval = time.perf_counter()
         chunks = retrieval_service.hybrid_search(query=query, limit=request.limit)
+        retrieval_latency_seconds.observe(time.perf_counter() - start_retrieval)
 
         # 2. Query local Ollama model for grounded answer
+        start_llm = time.perf_counter()
         answer = await llm_service.generate_answer(query=query, chunks=chunks)
+        llm_generation_latency_seconds.observe(time.perf_counter() - start_llm)
 
         # 3. Filter citations based on model's explicit citations
         # If the model says it doesn't know, we return empty citations.

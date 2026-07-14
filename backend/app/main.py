@@ -1,11 +1,16 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+from sqlalchemy.orm import Session
+
 from app.core.config import settings
 from app.routers import documents, search, chat, auth
-from app.core.database import engine, Base
+from app.core.database import engine, Base, get_db
 from app.models.user import User  # noqa: F401
 from app.models.document import Document  # noqa: F401
 from app.models.chat import ChatMessage  # noqa: F401
+from app.core.metrics import update_active_documents_gauge
 
 # Automatically create database tables (SQLite finsight.db) on startup
 Base.metadata.create_all(bind=engine)
@@ -13,6 +18,17 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
+
+# Instrument the FastAPI app to collect request metrics
+Instrumentator().instrument(app)
+
+
+@app.get("/metrics")
+def get_metrics(db: Session = Depends(get_db)):
+    # Update active documents count dynamically from SQL db on every scrape
+    update_active_documents_gauge(db)
+    return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
 
 # CORS middleware configuration
 app.add_middleware(

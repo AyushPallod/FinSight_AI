@@ -4,6 +4,7 @@ from unittest.mock import patch, AsyncMock
 from app.main import app
 from app.services.ingestion import ingestion_service
 from app.services.llm import llm_service
+from app.services.retrieval import retrieval_service
 
 client = TestClient(app)
 
@@ -78,3 +79,34 @@ def test_upload_and_chat_flow():
     assert chat_data["citations"][0]["document"] == "sample.pdf"
     assert chat_data["citations"][0]["page"] == 1
     assert "Net income" in chat_data["citations"][0]["snippet"]
+
+
+def test_prometheus_metrics_endpoint():
+    # Call the /metrics endpoint exposed by the instrumentator
+    response = client.get("/metrics")
+    assert response.status_code == 200
+    # Prometheus standard metrics text format checks
+    assert "http_requests_total" in response.text
+    assert "content-type" in response.headers
+    assert "text/plain" in response.headers["content-type"]
+
+
+def test_custom_prometheus_metrics():
+    # 1. Register and login a user to execute search
+    user_payload = {"email": "metricsuser@example.com", "password": "metricsuser123"}
+    client.post("/api/v1/auth/register", json=user_payload)
+    login_response = client.post("/api/v1/auth/login", json=user_payload)
+    access_token = login_response.json()["access_token"]
+    headers = {"Authorization": f"Bearer {access_token}"}
+
+    # 2. Trigger search query cache miss
+    search_payload = {"query": "Operating leverage details", "limit": 3}
+    with patch.object(retrieval_service, "hybrid_search", return_value=[]):
+        client.post("/api/v1/search", json=search_payload, headers=headers)
+
+    # 3. Check that custom metrics exist and show correctly in the /metrics output
+    response = client.get("/metrics")
+    assert response.status_code == 200
+    assert "retrieval_latency_seconds_count" in response.text
+    assert "cache_misses_total" in response.text
+    assert "active_documents_total" in response.text

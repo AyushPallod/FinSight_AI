@@ -1,3 +1,4 @@
+import time
 import logging
 import json
 from typing import List
@@ -8,10 +9,16 @@ from app.services.retrieval import retrieval_service
 from app.core.auth import get_current_user
 from app.models.user import User
 from app.core.config import settings
+from app.core.metrics import (
+    retrieval_latency_seconds,
+    cache_hits_total,
+    cache_misses_total,
+)
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/search", tags=["search"])
+
 
 # Connect to Redis with string decoding enabled
 redis_client = redis.Redis.from_url(settings.REDIS_URL, decode_responses=True)
@@ -64,6 +71,7 @@ async def search_documents(
         cached_data = redis_client.get(cache_key)
         if cached_data:
             logger.info(f"Cache HIT for query: '{query}' (User ID: {current_user.id})")
+            cache_hits_total.inc()
             return json.loads(cached_data)
     except Exception as re:
         logger.warning(
@@ -72,9 +80,14 @@ async def search_documents(
 
     try:
         logger.info(f"Cache MISS. Executing hybrid search for query: '{query}'")
+        cache_misses_total.inc()
+
+        start_time = time.perf_counter()
         fused_results = retrieval_service.hybrid_search(
             query=query, limit=request.limit
         )
+        duration = time.perf_counter() - start_time
+        retrieval_latency_seconds.observe(duration)
 
         response_data = SearchResponse(
             query=query,
