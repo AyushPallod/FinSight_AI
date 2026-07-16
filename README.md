@@ -9,17 +9,6 @@
 
 ---
 
-## 🎯 Project Highlights (MLOps / GenAI)
-
-**Tech Stack:** FastAPI, Qdrant, Postgres, Redis, Celery, Ollama, Prometheus, Grafana, RAGAS, Docker Compose, GitHub Actions
-
-- Built a production-grade hybrid RAG platform (BM25 + BGE-M3 dense retrieval, RRF fusion) for financial document intelligence, delivering cited answers from 10-K/10-Q filings and earnings transcripts.
-- Engineered a 9-service Docker Compose architecture (FastAPI, Postgres, Redis, Celery workers, Qdrant, Ollama, Prometheus, Grafana, Nginx) with async background processing for ingestion/OCR/embedding pipelines.
-- Quantified RAG quality with a RAGAS evaluation harness (faithfulness, context precision/recall, answer relevancy) and enforced guardrails for prompt-injection detection and PII redaction pre-indexing.
-- Instrumented full observability (Prometheus + Grafana) tracking p50/p95/p99 API latency, retrieval/LLM generation latency, and live quality metrics; shipped via GitHub Actions CI/CD to GPU infrastructure.
-
----
-
 ## 🚀 Key Features
 
 * **Intelligent Document Processing:** Seamlessly upload and chunk financial PDFs for optimal retrieval.
@@ -35,8 +24,6 @@
 
 ## 📸 Screenshots
 
-*(Replace the placeholders below with the actual screenshots once taken)*
-
 ### System Dashboard (Grafana)
 ![System Health Dashboard](docs/images/grafana_system_health.png)
 *Real-time monitoring of API latency, request rates, error rates, and cache hits.*
@@ -45,13 +32,9 @@
 ![AI Quality Dashboard](docs/images/grafana_ai_quality.png)
 *RAGAS evaluation metrics showing Faithfulness and Answer Relevancy of the LLM responses.*
 
-### Nginx HTTPS Landing Page
-![HTTPS Proxy](docs/images/nginx_https.png)
-*Secure HTTPS reverse proxy routing traffic successfully.*
-
-### Grounded AI Chat
-![Grounded Response](docs/images/chat_grounded_response.png)
-*Intelligent chat interface providing answers directly cited from uploaded 10-K financial documents.*
+### Docker Compose Services
+![Docker Architecture](docs/images/docker_compose_up.png)
+*The full 10-service Docker stack running seamlessly.*
 
 ---
 
