@@ -32,9 +32,9 @@
 ![AI Quality Dashboard](docs/images/grafana_ai_quality.png)
 *RAGAS evaluation metrics showing Faithfulness and Answer Relevancy of the LLM responses.*
 
-### Docker Compose Services
-![Docker Architecture](docs/images/docker_compose_up.png)
-*The full 10-service Docker stack running seamlessly.*
+### Grounded AI Chat
+![Grounded Response](docs/images/chat_grounded_response.png)
+*Intelligent chat interface providing answers directly cited from uploaded financial documents.*
 
 ---
 
