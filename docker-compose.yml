@@ -91,6 +91,8 @@ services:
     volumes:
       # Shared volume so the backend and worker share the same temporary upload folder
       - temp_uploads:/app/temp_uploads
+      # Mount eval_results so the backend can read RAGAS scores for Prometheus
+      - ./eval_results:/app/eval_results:ro
     deploy:
       resources:
         reservations:
@@ -218,7 +220,7 @@ services:
       - frontend
       - backend
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-check-certificate --spider https://localhost || exit 1"]
+      test: ["CMD-SHELL", "wget --no-check-certificate --spider https://127.0.0.1 || exit 1"]
       interval: 5s
       timeout: 5s
       retries: 5

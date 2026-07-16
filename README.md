@@ -1,90 +1,110 @@
 # FinSight AI
 
-FinSight AI is a production-grade Retrieval-Augmented Generation (RAG) platform designed for financial document intelligence. It ingests complex financial documents (like 10-K/10-Q filings, transcripts, and reports), generates semantic embeddings, performs hybrid search, and provides LLM-grounded answers with page-level citations.
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
+![Python](https://img.shields.io/badge/python-3.11+-blue)
+![Docker](https://img.shields.io/badge/docker-ready-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-## Tech Stack
-- **Frontend:** React, TypeScript, Tailwind CSS (v4), Vite
-- **Backend:** FastAPI (Python 3.10+)
-- **Database:** PostgreSQL (Users, Documents, Chat history metadata)
-- **Vector DB:** Qdrant
-- **Caching/Queue:** Redis & Celery
-- **LLM/Embeddings:** Llama 3.2 via Ollama, BAAI BGE-M3
-- **Monitoring & Observability:** Prometheus & Grafana
+**FinSight AI** is an advanced Retrieval-Augmented Generation (RAG) platform designed specifically for processing and analyzing complex financial documents. Utilizing a powerful stack of modern AI and web technologies, FinSight AI allows users to upload financial PDFs, extract critical insights, and chat with an intelligent AI assistant grounded purely on the uploaded documents.
 
-## Directory Structure
-```
-FinSight/
-├── backend/            # FastAPI Backend Application
-│   ├── app/            # Source code
-│   └── requirements.txt
-├── frontend/           # React + TypeScript + Tailwind CSS Frontend
-├── docker/             # Docker deployment configurations
-├── docs/               # Architecture diagrams and documentation
-└── README.md
-```
+---
 
-## Getting Started
+## 🚀 Key Features
+
+* **Intelligent Document Processing:** Seamlessly upload and chunk financial PDFs for optimal retrieval.
+* **Retrieval-Augmented Generation (RAG):** Answers are grounded in your data, preventing hallucinations.
+* **Local LLM Integration:** Powered by Ollama (Llama 3), ensuring data privacy and local execution.
+* **Advanced Vector Search:** Utilizes Qdrant for highly scalable and lightning-fast semantic search.
+* **AI Quality Evaluation:** Built-in RAGAS (Retrieval Augmented Generation Assessment) to continuously measure Faithfulness, Answer Relevancy, and Context Recall.
+* **Safety Guardrails:** Real-time protection against prompt injection, toxic content, and jailbreak attempts.
+* **Comprehensive Observability:** Deep monitoring with Prometheus and Grafana dashboards for both System Health and AI Quality metrics.
+* **Secure Architecture:** Nginx Reverse Proxy with HTTPS support.
+
+---
+
+## 📸 Screenshots
+
+*(Replace the placeholders below with the actual screenshots once taken)*
+
+### System Dashboard (Grafana)
+![System Health Dashboard](docs/images/grafana_system_health.png)
+*Real-time monitoring of API latency, request rates, error rates, and cache hits.*
+
+### AI Quality Dashboard (Grafana)
+![AI Quality Dashboard](docs/images/grafana_ai_quality.png)
+*RAGAS evaluation metrics showing Faithfulness and Answer Relevancy of the LLM responses.*
+
+### Nginx HTTPS Landing Page
+![HTTPS Proxy](docs/images/nginx_https.png)
+*Secure HTTPS reverse proxy routing traffic successfully.*
+
+### Docker Compose Services
+![Docker Architecture](docs/images/docker_compose_up.png)
+*The full 10-service Docker stack running seamlessly.*
+
+---
+
+## 🏗️ Architecture
+
+FinSight AI employs a robust microservices architecture orchestrated with Docker Compose:
+
+1. **Frontend:** React-based UI for seamless user interactions.
+2. **Backend:** FastAPI application handling API requests, RAG pipelines, and logic.
+3. **Database (PostgreSQL):** Relational store for user and document metadata.
+4. **Vector Database (Qdrant):** Stores document embeddings for semantic search.
+5. **Cache/Broker (Redis):** Caching layer and message broker for background tasks.
+6. **Task Worker (Celery):** Asynchronous background processing (e.g., document chunking and embeddings).
+7. **LLM Server (Ollama):** Local inference engine.
+8. **Reverse Proxy (Nginx):** API Gateway and HTTPS termination.
+9. **Metrics Scraper (Prometheus):** Aggregates telemetry data.
+10. **Visualization (Grafana):** Dashboards for system and AI observability.
+
+---
+
+## 🛠️ Setup & Installation
 
 ### Prerequisites
-- Python 3.10+
-- Node.js & npm
-- Docker (for Qdrant, Postgres, Redis)
-- Ollama running locally with `llama3.2` model pulled:
-  ```bash
-  ollama run llama3.2
-  ```
+* Docker and Docker Compose (Docker Desktop recommended on Windows/Mac)
+* Git
 
-### Development Setup
+### Quick Start
 
-Detailed setup guides for backend and frontend will be added as implementation progresses.
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/YourUsername/FinSight_AI.git
+   cd FinSight_AI
+   ```
 
+2. **Generate Self-Signed Certificates (For Local HTTPS):**
+   *A Python script is provided to automatically generate local certificates.*
+   ```bash
+   python generate_certs.py
+   ```
 
-1. Stopping the Containers
-Depending on how cleanly you want to stop the services:
+3. **Start the Stack:**
+   *Spin up all 10 services using Docker Compose.*
+   ```bash
+   docker compose up --build -d
+   ```
 
-Stop and Remove Containers (Recommended):
+4. **Access the Services:**
+   * **Main App (HTTPS):** `https://localhost`
+   * **API Docs (Swagger):** `https://localhost/docs`
+   * **Grafana Dashboards:** `http://localhost:3000` (Login: `admin` / `admin`)
+   * **Prometheus:** `http://localhost:9090`
 
-powershell
-docker compose down
-This stops the containers and removes them from the network, but preserves all database data (PostgreSQL/Qdrant) because they are stored in persistent Docker volumes.
+---
 
-Pause/Stop Containers (Without removing them):
+## 🛡️ Production Readiness
 
-powershell
-docker compose stop
-This temporarily halts the running processes. You can resume them quickly without recreating the container interfaces.
+While this project is configured for a robust local deployment, the following steps are recommended before deploying to a production environment:
 
-2. Starting the Containers
-Start in Detached Mode (Background - Recommended):
+1. **SSL Certificates:** Replace the self-signed certificates with a trusted CA like Let's Encrypt. The `nginx.conf` contains comments on how to configure this easily.
+2. **Secrets Management:** Change all default passwords and secrets in `.env` or `docker-compose.yml`.
+3. **Hardware:** A GPU is highly recommended for the Ollama inference server and embedding generation.
 
-powershell
-docker compose up -d
-This starts all the services defined in your docker-compose.yml file in the background, freeing up your terminal.
+---
 
-Start Containers (If you previously used stop):
+## 📄 License
 
-powershell
-docker compose start
-3. Rebuilding after Code Edits
-If you make modifications to the backend code, frontend files, or requirements.txt:
-
-Rebuild and Start:
-powershell
-docker compose up -d --build
-This checks if any files have changed, rebuilds the corresponding image layers (utilizing cache where possible), and replaces the running containers with the updated version.
-4. Monitoring Logs and Status
-Check Service Status & Health Checks:
-
-powershell
-docker compose ps
-Stream Live Logs for a Specific Service (e.g., Backend):
-
-powershell
-docker compose logs -f backend
-Stream Live Logs for the Background Worker:
-
-powershell
-docker compose logs -f celery-worker
-
-$env:OLLAMA_HOST="0.0.0.0:11434"
-ollama serve
+This project is licensed under the MIT License - see the LICENSE file for details.

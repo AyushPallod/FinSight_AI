@@ -110,9 +110,12 @@ def get_metrics(db: Session = Depends(get_db)):
 @app.get(f"{settings.API_V1_STR}/eval-metrics")
 def get_eval_metrics():
     # Read the newest JSON result from eval_results folder and update Prometheus gauges
-    eval_dir = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "eval_results"
-    )
+    eval_dir = os.environ.get("EVAL_RESULTS_DIR", "/app/eval_results")
+    if not os.path.exists(eval_dir):
+        # Fallback for local dev outside Docker
+        eval_dir = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "eval_results"
+        )
     if os.path.exists(eval_dir):
         files = glob.glob(os.path.join(eval_dir, "*.json"))
         if files:
