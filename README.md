@@ -49,9 +49,9 @@
 ![HTTPS Proxy](docs/images/nginx_https.png)
 *Secure HTTPS reverse proxy routing traffic successfully.*
 
-### Docker Compose Services
-![Docker Architecture](docs/images/docker_compose_up.png)
-*The full 10-service Docker stack running seamlessly.*
+### Grounded AI Chat
+![Grounded Response](docs/images/chat_grounded_response.png)
+*Intelligent chat interface providing answers directly cited from uploaded 10-K financial documents.*
 
 ---
 
