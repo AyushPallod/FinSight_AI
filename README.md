@@ -1,9 +1,9 @@
 # FinSight AI
 
-![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![Python](https://img.shields.io/badge/python-3.11+-blue)
-![Docker](https://img.shields.io/badge/docker-ready-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/AyushPallod/FinSight_AI)
+[![Python](https://img.shields.io/badge/python-3.11+-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![Docker](https://img.shields.io/badge/docker-ready-blue.svg?logo=docker&logoColor=white)](https://www.docker.com/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 **FinSight AI** is an advanced Retrieval-Augmented Generation (RAG) platform designed specifically for processing and analyzing complex financial documents. Utilizing a powerful stack of modern AI and web technologies, FinSight AI allows users to upload financial PDFs, extract critical insights, and chat with an intelligent AI assistant grounded purely on the uploaded documents.
 
