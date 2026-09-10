@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
-import { 
-  Activity, 
-  Cpu, 
-  Database, 
-  CheckCircle2, 
-  AlertCircle, 
+import {
+  Activity,
+  Cpu,
+  Database,
+  CheckCircle2,
+  AlertCircle,
   Terminal,
   Layers,
   Sparkles
@@ -49,7 +49,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950">
-      
+
       {/* Background Glow effects */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full filter blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-teal-500/10 rounded-full filter blur-3xl pointer-events-none"></div>
@@ -67,7 +67,7 @@ function App() {
             <p className="text-[10px] text-emerald-400/80 font-mono tracking-widest uppercase">System Initialization</p>
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-3">
           <span className="flex h-2.5 w-2.5 relative">
             <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${health ? 'bg-emerald-400' : 'bg-rose-400'}`}></span>
@@ -81,7 +81,7 @@ function App() {
 
       {/* Main Content */}
       <main className="flex-1 max-w-5xl w-full mx-auto px-6 py-12 flex flex-col md:flex-row gap-8 items-stretch z-10">
-        
+
         {/* Left column: Overview and Status */}
         <div className="flex-1 flex flex-col space-y-6">
           <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 md:p-8 flex flex-col space-y-4 shadow-xl">
@@ -89,7 +89,7 @@ function App() {
               <Sparkles className="h-3 w-3" />
               <span>Phase 1 Sandbox Active</span>
             </div>
-            
+
             <h2 className="text-3xl font-extrabold tracking-tight font-display bg-gradient-to-r from-slate-100 to-slate-300 bg-clip-text text-transparent">
               Financial Document Intelligence RAG
             </h2>
@@ -150,7 +150,7 @@ function App() {
               </div>
             )}
 
-            <button 
+            <button
               onClick={checkConnection}
               disabled={loading}
               className="mt-2 w-full py-2.5 px-4 bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-500/50 text-slate-950 font-bold rounded-xl text-sm transition-all duration-200 shadow-lg shadow-emerald-500/15 flex items-center justify-center space-x-2 cursor-pointer"
