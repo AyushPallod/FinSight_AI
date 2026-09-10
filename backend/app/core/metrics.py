@@ -1,5 +1,6 @@
-from prometheus_client import Histogram, Counter, Gauge
+from prometheus_client import Counter, Gauge, Histogram
 from sqlalchemy.orm import Session
+
 from app.models.document import Document
 
 # Custom Prometheus metrics definitions for FinSight RAG observability

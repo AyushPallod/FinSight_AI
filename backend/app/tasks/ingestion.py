@@ -1,18 +1,18 @@
-import os
 import logging
+import os
+
 from app.core.celery_app import celery_app
 from app.core.database import SessionLocal
+from app.models.chat import ChatMessage  # noqa: F401 — needed for SQLAlchemy registry
+from app.models.document import Document
 
 # All models must be imported in the Celery worker process so SQLAlchemy
 # can resolve all relationship() references (e.g. Document → User).
 from app.models.user import User  # noqa: F401 — needed for SQLAlchemy registry
-from app.models.document import Document
-from app.models.chat import ChatMessage  # noqa: F401 — needed for SQLAlchemy registry
-
-from app.services.ingestion import ingestion_service
 from app.services.chunking import chunking_service
-from app.services.vector_store import vector_store_service
 from app.services.guardrails import scrub_chunks
+from app.services.ingestion import ingestion_service
+from app.services.vector_store import vector_store_service
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +78,7 @@ def process_document_task(document_id: int, file_path: str, filename: str) -> No
 
     except Exception as e:
         logger.exception(
-            f"Background task failed for document ID {document_id} due to: {str(e)}"
+            f"Background task failed for document ID {document_id} due to: {e!s}"
         )
 
         # Update SQL status to 'failed' so the user is informed
@@ -99,5 +99,5 @@ def process_document_task(document_id: int, file_path: str, filename: str) -> No
                 logger.info(f"Cleaned up temporary upload file: {file_path}")
             except Exception as cleanup_err:
                 logger.warning(
-                    f"Could not remove temp file {file_path}: {str(cleanup_err)}"
+                    f"Could not remove temp file {file_path}: {cleanup_err!s}"
                 )

@@ -1,15 +1,16 @@
-import time
 import logging
 import os
-from typing import List
-from fastapi import APIRouter, HTTPException, status, Depends
+import time
+
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
-from app.services.retrieval import retrieval_service
-from app.services.llm import llm_service
-from app.services.guardrails import detect_prompt_injection
+
 from app.core.auth import get_current_user
+from app.core.metrics import llm_generation_latency_seconds, retrieval_latency_seconds
 from app.models.user import User
-from app.core.metrics import retrieval_latency_seconds, llm_generation_latency_seconds
+from app.services.guardrails import detect_prompt_injection
+from app.services.llm import llm_service
+from app.services.retrieval import retrieval_service
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ class CitationItem(BaseModel):
 class ChatResponse(BaseModel):
     query: str
     answer: str
-    citations: List[CitationItem]
+    citations: list[CitationItem]
 
 
 @router.post("", response_model=ChatResponse, status_code=status.HTTP_200_OK)
@@ -111,8 +112,8 @@ async def chat_interaction(
         return ChatResponse(query=query, answer=answer, citations=citations)
 
     except Exception as e:
-        logger.error(f"Failed to process RAG chat request: {str(e)}", exc_info=True)
+        logger.error(f"Failed to process RAG chat request: {e!s}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An error occurred while generating RAG response: {str(e)}",
+            detail=f"An error occurred while generating RAG response: {e!s}",
         )

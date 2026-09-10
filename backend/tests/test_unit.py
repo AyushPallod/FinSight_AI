@@ -1,9 +1,11 @@
+from unittest.mock import patch
+
 import pytest
 from fastapi import HTTPException
+
 from app.services.chunking import chunking_service
-from app.services.guardrails import detect_prompt_injection, scrub_pii, scrub_chunks
+from app.services.guardrails import detect_prompt_injection, scrub_chunks, scrub_pii
 from app.services.retrieval import retrieval_service, tokenize
-from unittest.mock import patch
 
 # ==========================================
 # 1. Chunker Unit Tests

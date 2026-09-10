@@ -1,6 +1,8 @@
 import logging
+from typing import Any
+
 import httpx
-from typing import List, Dict, Any
+
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -11,7 +13,7 @@ class LLMService:
         self.base_url = settings.OLLAMA_BASE_URL
         self.model = settings.OLLAMA_MODEL
 
-    async def generate_answer(self, query: str, chunks: List[Dict[str, Any]]) -> str:
+    async def generate_answer(self, query: str, chunks: list[dict[str, Any]]) -> str:
         """
         Queries the locally running Ollama model using the provided context chunks.
         Enforces strict grounding guidelines and inline citation instructions.
@@ -39,9 +41,11 @@ class LLMService:
             "You are FinSight AI, a financial document intelligence assistant.\n"
             "Answer the user's question objectively and accurately using ONLY the provided Document Sources below.\n"
             "If the provided Document Sources do not contain enough facts to answer the question, state exactly:\n"
-            "'I am sorry, but the provided documents do not contain the information required to answer your question.'\n"
+            "'I am sorry, but the provided documents do not contain "
+            "the information required to answer your question.'\n"
             "Do not make up facts, draw outside assumptions, or use external knowledge.\n\n"
-            "CRITICAL: For every fact, number, or claim you state, you MUST cite the source document name and page number. "
+            "CRITICAL: For every fact, number, or claim you state, you MUST cite "
+            "the source document name and page number. "
             "Format your citations inline precisely as [Source: filename, Page X].\n"
         )
 
@@ -82,11 +86,11 @@ class LLMService:
             return answer
 
         except httpx.RequestError as e:
-            logger.error(f"HTTP connection error to Ollama at {url}: {str(e)}")
+            logger.error(f"HTTP connection error to Ollama at {url}: {e!s}")
             return "Error: Could not reach the local Ollama service. Please make sure Ollama is running."
         except Exception as e:
             logger.error(
-                f"Unexpected error during answer generation: {str(e)}", exc_info=True
+                f"Unexpected error during answer generation: {e!s}", exc_info=True
             )
             return "Error: An unexpected error occurred while generating the answer."
 

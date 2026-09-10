@@ -1,5 +1,5 @@
 import re
-from typing import List, Dict, Any
+from typing import Any
 
 # Set of common abbreviations that shouldn't end a sentence
 ABBREVIATIONS = {
@@ -33,7 +33,7 @@ ABBREVIATIONS = {
 
 
 class ChunkingService:
-    def split_into_sentences(self, text: str) -> List[str]:
+    def split_into_sentences(self, text: str) -> list[str]:
         """
         Splits text into sentences, handling abbreviations and initials correctly.
         """
@@ -77,12 +77,12 @@ class ChunkingService:
 
     def chunk_document(
         self,
-        pages: List[Dict[str, Any]],
+        pages: list[dict[str, Any]],
         document_id: str,
         source_filename: str,
         target_words: int = 300,
         overlap_sentences: int = 2,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Groups sentences of each page into chunks of approximately target_words.
         Tracks page numbers, document IDs, filenames, and sequential chunk indices.

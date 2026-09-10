@@ -1,13 +1,15 @@
-import os
 import logging
+import os
 import uuid
-from fastapi import APIRouter, UploadFile, File, HTTPException, status, Depends
+
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from app.core.database import get_db
+
 from app.core.auth import get_current_user
-from app.models.user import User
+from app.core.database import get_db
 from app.models.document import Document
+from app.models.user import User
 from app.tasks.ingestion import process_document_task
 
 logger = logging.getLogger(__name__)
@@ -101,7 +103,7 @@ async def upload_document(
 
     except Exception as e:
         logger.error(
-            f"Error starting background ingestion of {filename}: {str(e)}",
+            f"Error starting background ingestion of {filename}: {e!s}",
             exc_info=True,
         )
         # Clean up temp file immediately on failure to trigger task
@@ -112,7 +114,7 @@ async def upload_document(
                 pass
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to initiate document upload: {str(e)}",
+            detail=f"Failed to initiate document upload: {e!s}",
         )
 
 

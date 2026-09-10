@@ -1,12 +1,13 @@
+import logging
 import os
 import shutil
-import logging
-from typing import List, Dict, Any
-from PIL import Image
-import fitz  # PyMuPDF
+from typing import Any
+
 import docx  # python-docx
-from pptx import Presentation  # python-pptx
+import fitz  # PyMuPDF
 import pytesseract
+from PIL import Image
+from pptx import Presentation  # python-pptx
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ if shutil.which("tesseract") is None:
 
 
 class IngestionService:
-    def extract_text(self, file_path: str, file_extension: str) -> List[Dict[str, Any]]:
+    def extract_text(self, file_path: str, file_extension: str) -> list[dict[str, Any]]:
         """
         Dispatches to the correct parser based on file extension.
         Returns a list of dictionaries containing page number and text:
@@ -45,7 +46,7 @@ class IngestionService:
         else:
             raise ValueError(f"Unsupported file extension: .{ext}")
 
-    def _extract_pdf(self, file_path: str) -> List[Dict[str, Any]]:
+    def _extract_pdf(self, file_path: str) -> list[dict[str, Any]]:
         """
         Extracts text from PDF using PyMuPDF. Falls back to Tesseract OCR for scanned pages.
         """
@@ -84,9 +85,9 @@ class IngestionService:
                         f"Tesseract OCR is not installed or not in PATH. Skipping OCR for page {page_num}."
                     )
                 except Exception as e:
-                    text = f"[Scanned Page - OCR Error: {str(e)}]"
+                    text = f"[Scanned Page - OCR Error: {e!s}]"
                     logger.error(
-                        f"Error during OCR extraction on page {page_num}: {str(e)}",
+                        f"Error during OCR extraction on page {page_num}: {e!s}",
                         exc_info=True,
                     )
 
@@ -95,7 +96,7 @@ class IngestionService:
         doc.close()
         return pages_data
 
-    def _extract_docx(self, file_path: str) -> List[Dict[str, Any]]:
+    def _extract_docx(self, file_path: str) -> list[dict[str, Any]]:
         """
         Extracts text from Word documents using python-docx.
         Since flow documents do not have physical page numbers, all text goes into page 1.
@@ -119,7 +120,7 @@ class IngestionService:
 
         return [{"page_number": 1, "text": "\n".join(full_text)}]
 
-    def _extract_pptx(self, file_path: str) -> List[Dict[str, Any]]:
+    def _extract_pptx(self, file_path: str) -> list[dict[str, Any]]:
         """
         Extracts text from PowerPoint presentations using python-pptx.
         Each slide maps to a "page".
@@ -143,11 +144,11 @@ class IngestionService:
 
         return pages_data
 
-    def _extract_txt(self, file_path: str) -> List[Dict[str, Any]]:
+    def _extract_txt(self, file_path: str) -> list[dict[str, Any]]:
         """
         Reads a standard plain text file. Entire text goes into page 1.
         """
-        with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+        with open(file_path, encoding="utf-8", errors="ignore") as f:
             text = f.read()
 
         return [{"page_number": 1, "text": text.strip()}]

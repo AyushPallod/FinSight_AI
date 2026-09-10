@@ -1,13 +1,15 @@
-import re
 import logging
-from typing import List, Dict, Any
+import re
+from typing import Any
+
 from rank_bm25 import BM25Okapi
+
 from app.services.vector_store import vector_store_service
 
 logger = logging.getLogger(__name__)
 
 
-def tokenize(text: str) -> List[str]:
+def tokenize(text: str) -> list[str]:
     """
     Standard clean tokenizer: converts text to lowercase and extracts alphanumeric words.
     """
@@ -17,7 +19,7 @@ def tokenize(text: str) -> List[str]:
 
 
 class RetrievalService:
-    def dense_search(self, query: str, limit: int = 10) -> List[Any]:
+    def dense_search(self, query: str, limit: int = 10) -> list[Any]:
         """
         Executes a dense vector similarity search against Qdrant.
         """
@@ -33,10 +35,10 @@ class RetrievalService:
                 )
             return response.points
         except Exception as e:
-            logger.error(f"Error during dense search: {str(e)}", exc_info=True)
+            logger.error(f"Error during dense search: {e!s}", exc_info=True)
             return []
 
-    def sparse_search(self, query: str, limit: int = 10) -> List[Any]:
+    def sparse_search(self, query: str, limit: int = 10) -> list[Any]:
         """
         Executes a BM25 sparse keyword search over all currently indexed chunks.
         """
@@ -74,12 +76,12 @@ class RetrievalService:
             return [item[0] for item in matched_points[:limit]]
 
         except Exception as e:
-            logger.error(f"Error during sparse search: {str(e)}", exc_info=True)
+            logger.error(f"Error during sparse search: {e!s}", exc_info=True)
             return []
 
     def hybrid_search(
         self, query: str, limit: int = 5, rrf_k: int = 60
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Performs hybrid search by combining Dense and Sparse search results
         using Reciprocal Rank Fusion (RRF).

@@ -1,15 +1,16 @@
 import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.security import (
-    get_password_hash,
-    verify_password,
     create_access_token,
     create_refresh_token,
     decode_token,
+    get_password_hash,
+    verify_password,
 )
 from app.models.user import User, UserCreate, UserResponse
 

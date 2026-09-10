@@ -1,24 +1,25 @@
-import os
 import glob
 import json
+import os
 import time
 import uuid
+from datetime import UTC, datetime
+
 import structlog
-from datetime import datetime, timezone
-from fastapi import FastAPI, Depends, Response, Request
+from fastapi import Depends, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_client import CONTENT_TYPE_LATEST, Gauge, generate_latest
 from prometheus_fastapi_instrumentator import Instrumentator
-from prometheus_client import generate_latest, CONTENT_TYPE_LATEST, Gauge
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.routers import documents, search, chat, auth
-from app.core.database import engine, Base, get_db
-from app.models.user import User  # noqa: F401
-from app.models.document import Document  # noqa: F401
-from app.models.chat import ChatMessage  # noqa: F401
+from app.core.database import Base, engine, get_db
 from app.core.metrics import update_active_documents_gauge
 from app.core.security import decode_token
+from app.models.chat import ChatMessage  # noqa: F401
+from app.models.document import Document  # noqa: F401
+from app.models.user import User  # noqa: F401
+from app.routers import auth, chat, documents, search
 
 # Automatically create database tables (SQLite finsight.db) on startup
 Base.metadata.create_all(bind=engine)
@@ -96,7 +97,7 @@ async def logging_middleware(request: Request, call_next):
             user_id=user_id if user_id else "anonymous",
             latency_ms=latency_ms,
             status_code=status_code,
-            timestamp=datetime.now(timezone.utc).isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
 
@@ -121,7 +122,7 @@ def get_eval_metrics():
         if files:
             latest_file = max(files, key=os.path.getmtime)
             try:
-                with open(latest_file, "r", encoding="utf-8") as f:
+                with open(latest_file, encoding="utf-8") as f:
                     data = json.load(f)
                     scores = data.get("summary_scores", {})
 

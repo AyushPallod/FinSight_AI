@@ -1,19 +1,20 @@
-import time
-import logging
 import json
-from typing import List
+import logging
+import time
+
 import redis
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
-from app.services.retrieval import retrieval_service
+
 from app.core.auth import get_current_user
-from app.models.user import User
 from app.core.config import settings
 from app.core.metrics import (
-    retrieval_latency_seconds,
     cache_hits_total,
     cache_misses_total,
+    retrieval_latency_seconds,
 )
+from app.models.user import User
+from app.services.retrieval import retrieval_service
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +46,7 @@ class SearchResultItem(BaseModel):
 class SearchResponse(BaseModel):
     query: str
     total_results: int
-    results: List[SearchResultItem]
+    results: list[SearchResultItem]
 
 
 @router.post("", response_model=SearchResponse, status_code=status.HTTP_200_OK)
@@ -75,7 +76,7 @@ async def search_documents(
             return json.loads(cached_data)
     except Exception as re:
         logger.warning(
-            f"Failed to read from Redis search cache: {str(re)}. Falling back to direct search."
+            f"Failed to read from Redis search cache: {re!s}. Falling back to direct search."
         )
 
     try:
@@ -113,13 +114,13 @@ async def search_documents(
             redis_client.setex(cache_key, 300, response_data.model_dump_json())
             logger.info(f"Cached search results in Redis: '{cache_key}'")
         except Exception as re:
-            logger.warning(f"Failed to write to Redis search cache: {str(re)}")
+            logger.warning(f"Failed to write to Redis search cache: {re!s}")
 
         return response_data
 
     except Exception as e:
-        logger.error(f"Failed to perform search: {str(e)}", exc_info=True)
+        logger.error(f"Failed to perform search: {e!s}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An error occurred while executing the search query: {str(e)}",
+            detail=f"An error occurred while executing the search query: {e!s}",
         )

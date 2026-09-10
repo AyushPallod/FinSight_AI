@@ -1,17 +1,18 @@
-import sys
 import os
+import sys
 from logging.config import fileConfig
-from sqlalchemy import pool
+
 from alembic import context
+from sqlalchemy import pool
 
 # 1. Setup Python path so Alembic can import modules from our app directory
 sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), "..")))
 
 # 2. Import database components and model registration metadata
-from app.core.database import Base, DATABASE_URL
-from app.models.user import User  # noqa: F401
-from app.models.document import Document  # noqa: F401
+from app.core.database import DATABASE_URL, Base
 from app.models.chat import ChatMessage  # noqa: F401
+from app.models.document import Document  # noqa: F401
+from app.models.user import User  # noqa: F401
 
 # This is the Alembic Config object, which provides access to the values within the .ini file.
 config = context.config

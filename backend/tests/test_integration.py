@@ -1,6 +1,8 @@
 import io
+from unittest.mock import AsyncMock, patch
+
 from fastapi.testclient import TestClient
-from unittest.mock import patch, AsyncMock
+
 from app.main import app
 from app.services.ingestion import ingestion_service
 from app.services.llm import llm_service

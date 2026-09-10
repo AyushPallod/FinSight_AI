@@ -1,9 +1,10 @@
-import os
 import logging
-from datetime import datetime, timedelta, timezone
-from typing import Union, Any, Dict
-import jwt
+import os
+from datetime import UTC, datetime, timedelta
+from typing import Any
+
 import bcrypt
+import jwt
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +46,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
             plain_password.encode("utf-8"), hashed_password.encode("utf-8")
         )
     except Exception as e:
-        logger.error(f"Error during password verification: {str(e)}")
+        logger.error(f"Error during password verification: {e!s}")
         return False
 
 
@@ -53,15 +54,15 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 # 3. JWT Token Management - Step 3
 # ==========================================
 def create_access_token(
-    subject: Union[str, Any], expires_delta: timedelta = None
+    subject: str | Any, expires_delta: timedelta | None = None
 ) -> str:
     """
     Generates a short-lived JWT access token.
     """
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(
+        expire = datetime.now(UTC) + timedelta(
             minutes=ACCESS_TOKEN_EXPIRE_MINUTES
         )
 
@@ -75,15 +76,15 @@ def create_access_token(
 
 
 def create_refresh_token(
-    subject: Union[str, Any], expires_delta: timedelta = None
+    subject: str | Any, expires_delta: timedelta | None = None
 ) -> str:
     """
     Generates a long-lived JWT refresh token.
     """
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+        expire = datetime.now(UTC) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
 
     payload = {
         "exp": expire,
@@ -94,7 +95,7 @@ def create_refresh_token(
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def decode_token(token: str) -> Dict[str, Any]:
+def decode_token(token: str) -> dict[str, Any]:
     """
     Decodes and validates a JWT token.
     Returns the payload dictionary if valid, or an empty dictionary if expired/invalid.
@@ -106,5 +107,5 @@ def decode_token(token: str) -> Dict[str, Any]:
         logger.warning("Token verification failed: Token has expired.")
         return {}
     except jwt.PyJWTError as e:
-        logger.warning(f"Token verification failed: {str(e)}")
+        logger.warning(f"Token verification failed: {e!s}")
         return {}

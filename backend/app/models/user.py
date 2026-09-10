@@ -1,8 +1,10 @@
 import re
-from sqlalchemy import Column, Integer, String, Boolean
-from sqlalchemy.orm import relationship
-from app.core.database import Base
+
 from pydantic import BaseModel, field_validator
+from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy.orm import relationship
+
+from app.core.database import Base
 
 
 # ==========================================

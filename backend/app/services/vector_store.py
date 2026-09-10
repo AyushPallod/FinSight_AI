@@ -1,11 +1,13 @@
+import logging
 import os
 import uuid
-import logging
 from contextlib import contextmanager
-from typing import List, Dict, Any
-from sentence_transformers import SentenceTransformer
+from typing import Any
+
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams, PointStruct
+from qdrant_client.models import Distance, PointStruct, VectorParams
+from sentence_transformers import SentenceTransformer
+
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -85,11 +87,11 @@ class VectorStoreService:
                     logger.info(f"Collection '{self.collection_name}' already exists.")
         except Exception as e:
             logger.error(
-                f"Failed to check or create collection '{self.collection_name}': {str(e)}",
+                f"Failed to check or create collection '{self.collection_name}': {e!s}",
                 exc_info=True,
             )
 
-    def upsert_document_chunks(self, chunks: List[Dict[str, Any]]) -> bool:
+    def upsert_document_chunks(self, chunks: list[dict[str, Any]]) -> bool:
         """
         Embeds a list of document chunks and indexes them in Qdrant with their metadata.
         """
@@ -139,7 +141,7 @@ class VectorStoreService:
 
         except Exception as e:
             logger.error(
-                f"Error during chunk embedding and indexing: {str(e)}", exc_info=True
+                f"Error during chunk embedding and indexing: {e!s}", exc_info=True
             )
             raise e
 

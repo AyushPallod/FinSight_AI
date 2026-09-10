@@ -1,0 +1,32 @@
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+# Only enforce the core rule sets used when the project was formatted
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "RUF", # ruff-specific rules
+]
+
+ignore = [
+    # FastAPI: Depends() in argument defaults is the standard pattern
+    "B008",
+    # Blind exceptions are acceptable in cleanup/fallback paths
+    "BLE001",
+    # try-except-pass is fine in teardown / cleanup helpers
+    "S110",
+    # logger.error(..., exc_info=True) vs logger.exception() - style preference
+    "G201",
+    # Redundant exception in logging.exception message - informational, not a bug
+    "TRY401",
+    # raise e vs raise - both are explicit; suppress for readability
+    "TRY201",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]

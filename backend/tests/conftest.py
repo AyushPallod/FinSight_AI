@@ -1,7 +1,7 @@
 import os
 import sys
 from contextlib import contextmanager
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 # Ensure backend directory is in path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -10,16 +10,16 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 if "DATABASE_URL" not in os.environ:
     os.environ["DATABASE_URL"] = "sqlite:///./finsight_test.db"
 
-import pytest
 import numpy as np
-from sqlalchemy import create_engine
+import pytest
 from qdrant_client import QdrantClient
+from sqlalchemy import create_engine
 
-from app.core.database import Base, get_db, SessionLocal
-from app.services.vector_store import vector_store_service
-from app.routers import search
 from app.core.celery_app import celery_app
+from app.core.database import Base, SessionLocal, get_db
 from app.main import app
+from app.routers import search
+from app.services.vector_store import vector_store_service
 
 
 # Mock embedding model to avoid downloading BGE-M3 (2.2GB)
@@ -85,7 +85,7 @@ def mock_qdrant():
     client = QdrantClient(":memory:")
 
     # Pre-create the collection in memory
-    from qdrant_client.models import VectorParams, Distance
+    from qdrant_client.models import Distance, VectorParams
 
     client.create_collection(
         collection_name=vector_store_service.collection_name,
