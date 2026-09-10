@@ -190,7 +190,7 @@ The system consists of the following services:
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/YourUsername/FinSight_AI.git
+   git clone https://github.com/AyushPallod/FinSight_AI.git
    cd FinSight_AI
    ```
 
