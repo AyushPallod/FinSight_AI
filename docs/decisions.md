@@ -53,14 +53,3 @@ This document captures the key engineering decisions made while building FinSigh
 Rejected alternative: Integrating a cloud‑hosted LLM. It would have reduced engineering effort (no model serving infra) and offered higher model quality out‑of‑the‑box. However, the associated data‑privacy concerns, cost‑escalation at scale, and network latency violations made it untenable for a production‑grade, compliance‑sensitive solution.
 
 
----
-
-Alignment With the JD of TRIOLOGY
-* MLOps expertise: Full CI/CD with Docker‑Compose, Prometheus‑Grafana monitoring, and automated RAGAS evaluation.
-* Scalable architecture: Micro‑services, async processing, and secure TLS termination.
-* Data security: PII scrubbing, on‑premise LLM, strict access controls.
-* Observability: Real‑time metrics, alerting, and dashboarding.
-* Performance focus: Hybrid retrieval for high relevance, latency tracking, and background workers for heavy workloads.
-
-
-These decisions collectively demonstrate a production‑ready, secure, and observable AI system ready to meet the expectations outlined in the job description.
